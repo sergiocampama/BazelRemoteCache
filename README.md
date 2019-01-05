@@ -2,6 +2,7 @@
 
 This is an HTTP server optimized for Bazel
 [Remote Caching](https://docs.bazel.build/versions/master/remote-caching.html).
+It is built in Swift using [Swift NIO](https://github.com/apple/swift-nio).
 
 ## Usage note
 
@@ -16,7 +17,12 @@ swift run RemoteCacheServer
 * `--storage_path`: Defaults to empty. If not specified, an in-memory cache will be used,
   meaning that the cache will be lost when the server is killed. If this option is specified,
   a file system cache will be used, which is persisted across server restarts.
+* `--verbose`: If specified, the server will log all requests.
 
 ## Changelog
 
 * **0.1.0 (2019.01.05):** Initial release.
+
+## Future work
+
+* Implement status endpoint.
