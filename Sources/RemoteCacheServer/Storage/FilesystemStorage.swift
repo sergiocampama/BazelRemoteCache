@@ -49,7 +49,6 @@ class FilesystemStorage: CacheStorage {
       return .fileRegion(fileRegion)
     }
     fatalError("Could not read file \(resourceURI)")
-    return nil
   }
 
   func write(_ resourceURI: String, data: Data) {
