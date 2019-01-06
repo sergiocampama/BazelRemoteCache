@@ -10,7 +10,7 @@ It is built in Swift using [Swift NIO](https://github.com/apple/swift-nio).
 
 In order to run, clone this repository and execute it with:
 ```
-swift run RemoteCacheServer
+swift run server
 ```
 
 ### Available options:
