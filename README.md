@@ -1,5 +1,7 @@
 # Remote Cache Server
 
+[![Build Status](https://travis-ci.org/sergiocampama/BazelRemoteCache.svg?branch=master)](https://travis-ci.org/sergiocampama/BazelRemoteCache)
+
 This is an HTTP server optimized for Bazel
 [Remote Caching](https://docs.bazel.build/versions/master/remote-caching.html).
 It is built in Swift using [Swift NIO](https://github.com/apple/swift-nio).
