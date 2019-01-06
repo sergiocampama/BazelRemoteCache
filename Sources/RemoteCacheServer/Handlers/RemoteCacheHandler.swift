@@ -71,7 +71,7 @@ extension RemoteCacheHandler: ChannelInboundHandler {
       headReceived(requestHead, ctx: ctx)
     case .body(var body):
       bodyReceived(&body)
-    case .end(_):
+    case .end:
       endReceived(ctx: ctx)
     }
   }
