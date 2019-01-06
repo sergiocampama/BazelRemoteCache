@@ -23,6 +23,7 @@ swift run RemoteCacheServer
 
 ## Changelog
 
+* **0.1.1 (2019.01.06):** Improved testability.
 * **0.1.0 (2019.01.05):** Initial release.
 
 ## Future work
