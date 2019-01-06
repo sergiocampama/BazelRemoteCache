@@ -18,46 +18,56 @@ import NIO
 
 class FilesystemStorage: CacheStorage {
   private let localPath: String
-  private let concurrentFileQueue = DispatchQueue(label: "com.google.remote_cache.file", attributes: .concurrent)
+  private let concurrentFileQueue = DispatchQueue(label: "com.google.remote_cache.file",
+                                                  attributes: .concurrent)
 
   init(localPath: String) {
     self.localPath = localPath
-    if !FileManager.default.fileExists(atPath: localPath + "/ac") {
-      do {
-        try FileManager.default.createDirectory(at: URL(fileURLWithPath: localPath + "/ac"),
-                                                 withIntermediateDirectories: true,
-                                                 attributes: nil)
-        try FileManager.default.createDirectory(at: URL(fileURLWithPath: localPath + "/cas"),
-                                                 withIntermediateDirectories: true,
-                                                 attributes: nil)
-      } catch let error {
-        fatalError("Could not initialize FilesystemStorage: \(error)")
+  }
+
+  func read(_ resourceURI: String, promise: EventLoopPromise<CacheResponseType>) {
+    let url = URL(fileURLWithPath: localPath).appendingPathComponent(resourceURI)
+    if FileManager.default.fileExists(atPath: url.path) {
+      if let fileHandle = try? FileHandle(path: url.path),
+        let fileRegion = try? FileRegion(fileHandle: fileHandle) {
+        promise.succeed(result: .iodata(.fileRegion(fileRegion)))
+        return
       }
     }
+    promise.succeed(result: .notFound)
   }
 
-  func contains(_ resourceURI: String) -> Bool {
-    let url = URL(fileURLWithPath: localPath).appendingPathComponent(resourceURI).path
-    return FileManager.default.fileExists(atPath: url)
-  }
-
-  func read(_ resourceURI: String) -> IOData? {
-    let url = URL(fileURLWithPath: localPath).appendingPathComponent(resourceURI).path
-
-    if let fileHandle = try? FileHandle(path: url),
-      let fileRegion = try? FileRegion(fileHandle: fileHandle) {
-      return .fileRegion(fileRegion)
-    }
-    fatalError("Could not read file \(resourceURI)")
-  }
-
-  func write(_ resourceURI: String, data: Data) {
+  func write(_ resourceURI: String, data: Data, promise: EventLoopPromise<CacheResponseType>?) {
     let url = URL(fileURLWithPath: localPath).appendingPathComponent(resourceURI)
+    let parent = url.deletingLastPathComponent()
+
+    // Check once to schedule a directory creation task...
+    if !FileManager.default.fileExists(atPath: parent.path) {
+      concurrentFileQueue.async(flags: .barrier) {
+        // ... and check again in case it was alredy created by another task.
+        if !FileManager.default.fileExists(atPath: parent.path) {
+          do {
+            try FileManager.default.createDirectory(at: parent,
+                                                    withIntermediateDirectories: true,
+                                                    attributes: nil)
+          } catch let error {
+            if let promise = promise {
+              promise.fail(error: error)
+            }
+          }
+        }
+      }
+    }
     concurrentFileQueue.async {
       do {
         try data.write(to: url, options: [.atomic])
       } catch let error {
-        fatalError("Could not write file: \(error)")
+        if let promise = promise {
+          promise.fail(error: error)
+        }
+      }
+      if let promise = promise {
+        promise.succeed(result: .void)
       }
     }
   }

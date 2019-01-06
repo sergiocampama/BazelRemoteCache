@@ -14,6 +14,7 @@
 
 import Commander
 import Foundation
+import RemoteCacheServer
 
 let hostOption = Option("host", default: "127.0.0.1", description: "host for the server")
 let portOption = Option("port", default: 9000, description: "port for the server")

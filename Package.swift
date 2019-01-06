@@ -10,17 +10,31 @@ var packageDependencies: [Package.Dependency] = [
 let package = Package(
   name: "RemoteCache",
   products: [
-    .executable(name: "RemoteCacheServer", targets: ["RemoteCacheServer"]),
+    .executable(name: "server", targets: ["server"]),
   ],
   dependencies: packageDependencies,
   targets: [
     .target(
       name: "RemoteCacheServer",
       dependencies: [
-        "Commander",
         "NIO",
         "NIOHTTP1",
       ]
-    )
+    ),
+    .target(
+      name: "server",
+      dependencies: [
+        "Commander",
+        "RemoteCacheServer",
+      ]
+    ),
+    .testTarget(
+      name: "RemoteCacheServerTests",
+      dependencies: [
+        "NIO",
+        "NIOFoundationCompat",
+        "RemoteCacheServer",
+      ]
+    ),
   ]
 )

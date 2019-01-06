@@ -20,15 +20,7 @@ class InMemoryStorage: CacheStorage {
   private var memoryStorage = [String: Data]()
   private let semaphore = DispatchSemaphore(value: 1)
 
-  func contains(_ resourceURI: String) -> Bool {
-    var contained = false
-    semaphore.wait()
-    contained = memoryStorage[resourceURI] != nil
-    semaphore.signal()
-    return contained
-  }
-
-  func read(_ resourceURI: String) -> IOData? {
+  func read(_ resourceURI: String, promise: EventLoopPromise<CacheResponseType>) {
     var read: Data? = nil
     semaphore.wait()
     read = memoryStorage[resourceURI]
@@ -38,15 +30,18 @@ class InMemoryStorage: CacheStorage {
       var byteBuffer = ByteBufferAllocator().buffer(capacity: data.count)
       byteBuffer.write(bytes: data)
 
-      return .byteBuffer(byteBuffer)
+      promise.succeed(result: .iodata(.byteBuffer(byteBuffer)))
+    } else {
+      promise.succeed(result: .notFound)
     }
-
-    return nil
   }
 
-  func write(_ resourceURI: String, data: Data) {
+  func write(_ resourceURI: String, data: Data, promise: EventLoopPromise<CacheResponseType>?) {
     semaphore.wait()
     memoryStorage[resourceURI] = data
     semaphore.signal()
+    if let promise = promise {
+      promise.succeed(result: .void)
+    }
   }
 }

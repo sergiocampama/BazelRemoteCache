@@ -15,26 +15,26 @@
 import Foundation
 import NIO
 
-enum StorageType {
+public enum StorageType {
   case inMemory
   case filesystem(String)
 }
 
-class RemoteCacheServer {
+public class RemoteCacheServer {
   private let group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
   private let host: String
   private let port: Int
   private let storageType: StorageType
   private let verbose: Bool
 
-  init(host: String, port: Int, storageType: StorageType, verbose: Bool) {
+  public init(host: String, port: Int, storageType: StorageType, verbose: Bool) {
     self.host = host
     self.port = port
     self.storageType = storageType
     self.verbose = verbose
   }
 
-  func start() throws {
+  public func start() throws {
     let storage: CacheStorage
     switch storageType {
     case .inMemory:
@@ -53,7 +53,7 @@ class RemoteCacheServer {
     }
   }
 
-  func stop() {
+  public func stop() {
     do {
       try group.syncShutdownGracefully()
     } catch let error {
